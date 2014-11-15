@@ -1,0 +1,413 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>ISMRM Sunrise Practical Session, Parallel Imaging Part I</title><meta name="generator" content="MATLAB 8.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-04-19"><meta name="DC.source" content="ismrm_beatty_practical_session.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>ISMRM Sunrise Practical Session, Parallel Imaging Part I</h1><!--introduction--><p>This document contains the first set of practical exercises for the ISMRM course on parallel imaging.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Exercise Data</a></li><li><a href="#2">Data Simulation</a></li><li><a href="#3">Prewhiten</a></li><li><a href="#4">Channel Combination</a></li><li><a href="#10">Create Acclerated Data</a></li><li><a href="#11">Create Data Driven &amp; Model Driven Joint Encoding Relations</a></li><li><a href="#12">Use Various Calibration Approaches to Create Unmixing Images</a></li><li><a href="#17">Apply and Analyze Reconstructions</a></li><li><a href="#22">Additional Demos</a></li></ul></div><h2>Exercise Data<a name="1"></a></h2><p>Exercise ground truth information is found in im1.mat (brain image), smaps_phantom.mat (sensitivity maps) and noise_covariances.mat (noise covariance matrices).</p><p>We start by clearing the workspace, loading this ground truth information and setting a few parameters from this.</p><pre class="codeinput">close <span class="string">all</span>;
+clear <span class="string">all</span>
+
+
+fprintf(<span class="string">'Loading Ground Truth Information\n'</span>);
+load <span class="string">im1.mat</span>
+load <span class="string">smaps_phantom.mat</span>
+load <span class="string">noise_covariances.mat</span>
+
+ncoils = size(smaps,3);
+Rn = Rn_normal_8;
+imsize = size(im1);
+nx = imsize(1);
+ny = imsize(2);
+</pre><pre class="codeoutput">Loading Ground Truth Information
+</pre><h2>Data Simulation<a name="2"></a></h2><p>Let's use our ground truth data to simulate some data</p><pre class="codeinput">channel_im = smaps .* repmat(im1, [1 1 ncoils]);
+
+noise_scale = 0.1;
+noise = noise_scale * max(im1(:)) * ismrm_generate_correlated_noise(imsize, Rn);
+data = ismrm_transform_image_to_kspace(channel_im, [1 2]) + noise;
+</pre><h2>Prewhiten<a name="3"></a></h2><p>Let's start by prewhitening so that we don't have to contend with the noise covariance matrix.</p><pre class="codeinput">dmtx = ismrm_calculate_noise_decorrelation_mtx_from_covariance_mtx(Rn);
+csm_true = ismrm_apply_noise_decorrelation_mtx(smaps, dmtx);
+data = ismrm_apply_noise_decorrelation_mtx(data, dmtx);
+<span class="comment">%Rn = eye(ncoils);</span>
+</pre><h2>Channel Combination<a name="4"></a></h2><p>Let's use our ground truth data to perform an SNR-optimal channel combination</p><pre class="codeinput">im_full = ismrm_transform_kspace_to_image(data, [1, 2]);
+ccm_roemer_optimal = ismrm_compute_ccm(csm_true, eye(ncoils));
+im_roemer_optimal = abs(sum(im_full .* ccm_roemer_optimal, 3));
+ismrm_imshow(im_roemer_optimal);
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_01.png" alt=""> <p>How does this compare to our ground-truth image?</p><pre class="codeinput">ismrm_imshow(abs(im_roemer_optimal-im1));
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_02.png" alt=""> <p>The noise level varies slightly from pixel-to-pixel.  Let's make a map of this</p><pre class="codeinput">noise_map = ismrm_calculate_noise_amplification(ccm_roemer_optimal, eye(ncoils));
+ismrm_imshow(noise_map, [0 max(noise_map(:))]);
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_03.png" alt=""> <p>How does this compare to a root-sum-of-squares (SOS) reconstruction?</p><pre class="codeinput">im_sos = ismrm_rss(im_full,3);
+ismrm_imshow(cat(3, im_roemer_optimal, im_sos));
+ismrm_imshow(cat(3, abs(im_roemer_optimal-im1), abs(im_sos-im1)));
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_04.png" alt=""> <img vspace="5" hspace="5" src="ismrm_beatty_practical_session_05.png" alt=""> <p>Looks like we have a scaling and/or shading issue that makes it hard to do this comparison. Let's normalize to SOS shading</p><pre class="codeinput">[ccm_roemer_optimal, shading_correction_im] = ismrm_normalize_shading_to_sos(ccm_roemer_optimal);
+im_roemer_optimal = abs(sum(im_full .* ccm_roemer_optimal, 3));
+im_true = shading_correction_im .* im1;
+ismrm_imshow(cat(3, im_true, im_roemer_optimal, im_sos));
+ismrm_imshow(cat(3, abs(im_roemer_optimal-im_true), abs(im_sos-im_true)));
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_06.png" alt=""> <img vspace="5" hspace="5" src="ismrm_beatty_practical_session_07.png" alt=""> <p>SOS channel combination aligns the phase of the background noise before summing, leading to a DC ofset in these pixels.  Let's try channel combination based on coil sensitivity estimates from some low resolution calibration data.</p><pre class="codeinput">cal_shape = [32 32];
+cal_noise_scale = 0.1;
+cal_data = ismrm_transform_image_to_kspace(channel_im, [1 2], cal_shape);
+noise = cal_noise_scale * max(im1(:)) * ismrm_generate_correlated_noise(cal_shape, Rn);
+cal_data = cal_data + noise;
+
+cal_data = ismrm_apply_noise_decorrelation_mtx(cal_data, dmtx);
+
+f = hamming(cal_shape(1)) * hamming(cal_shape(2))';
+fmask = repmat(f, [1 1 ncoils]);
+filtered_cal_data = cal_data .* fmask;
+
+cal_im = ismrm_transform_kspace_to_image(filtered_cal_data, [1 2], imsize);
+
+<span class="comment">%</span>
+<span class="comment">% Use a circular region of support for pixels</span>
+<span class="comment">%</span>
+pixel_mask = sum(abs(smaps),3) &gt; 0;
+cal_im = cal_im .* repmat(pixel_mask, [1 1 ncoils]);
+
+csm_walsh = ismrm_estimate_csm_walsh(cal_im);
+csm_mckenzie = ismrm_estimate_csm_mckenzie(cal_im);
+
+csm_true = ismrm_normalize_shading_to_sos(csm_true);
+csm_walsh = ismrm_normalize_shading_to_sos(csm_walsh);
+csm_mckenzie = ismrm_normalize_shading_to_sos(csm_mckenzie);
+
+ccm_mckenzie = ismrm_compute_ccm(csm_mckenzie);
+ccm_walsh = ismrm_compute_ccm(csm_walsh);
+
+im_mckenzie = abs(sum(im_full .* ccm_mckenzie, 3));
+im_walsh = abs(sum(im_full .* ccm_walsh, 3));
+
+ismrm_imshow(cat(3, im_true, im_roemer_optimal, im_sos, im_walsh, im_mckenzie), [], [], {<span class="string">'source image'</span>, <span class="string">'true csm'</span>, <span class="string">'SoS'</span>, <span class="string">'Walsh csm'</span>, <span class="string">'McKenzie csm'</span>});
+ismrm_imshow(cat(3, abs(im_roemer_optimal-im_true), abs(im_sos-im_true), abs(im_walsh-im_true), abs(im_mckenzie-im_true)));
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_08.png" alt=""> <img vspace="5" hspace="5" src="ismrm_beatty_practical_session_09.png" alt=""> <h2>Create Acclerated Data<a name="10"></a></h2><pre class="codeinput">acc_factor = 4;
+sp = ismrm_generate_sampling_pattern(imsize, acc_factor, 0);
+data_accel = data .* repmat(sp == 1 | sp == 3,[1 1 ncoils]);
+im_alias = ismrm_transform_kspace_to_image(data_accel,[1,2]);
+ismrm_imshow(abs(im_alias),[], [2 4]);
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_10.png" alt=""> <h2>Create Data Driven &amp; Model Driven Joint Encoding Relations<a name="11"></a></h2><pre class="codeinput">kernel_shape = [5 7];
+jer_lookup_dd = ismrm_compute_jer_data_driven(cal_data, kernel_shape);
+unfiltered_cal_im = ismrm_transform_kspace_to_image(cal_data, [1,2], 2 * size(cal_data));
+jer_lookup_md = ismrm_compute_jer_model_driven(unfiltered_cal_im, kernel_shape);
+</pre><h2>Use Various Calibration Approaches to Create Unmixing Images<a name="12"></a></h2><pre class="codeinput">num_recons = 4;
+titles = {<span class="string">'SENSE true csm'</span>, <span class="string">'SENSE estimated csm'</span>, <span class="string">'PARS'</span>, <span class="string">'GRAPPA'</span>};
+
+unmix = zeros([imsize ncoils num_recons]);
+unmix(:,:,:,1) = ismrm_calculate_sense_unmixing(acc_factor, csm_true, eye(ncoils), 0) .* acc_factor;
+unmix(:,:,:,2) = ismrm_calculate_sense_unmixing(acc_factor, csm_mckenzie, eye(ncoils), 0) .* acc_factor;
+unmix(:,:,:,3) = ismrm_calculate_jer_unmixing(jer_lookup_md, acc_factor, ccm_mckenzie, 0, false);
+unmix(:,:,:,4) = ismrm_calculate_jer_unmixing(jer_lookup_dd, acc_factor, ccm_mckenzie, 0, false);
+</pre><p>SENSE unmixing</p><pre class="codeinput">ismrm_imshow(abs(unmix(:,:,:,1)), [], [2 4]);
+ismrm_imshow(angle(unmix(:,:,:,1)), [], [2 4]); colormap(<span class="string">'hsv'</span>);
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_11.png" alt=""> <img vspace="5" hspace="5" src="ismrm_beatty_practical_session_12.png" alt=""> <p>SENSE unmixing with estimated coil sensitivity maps</p><pre class="codeinput">ismrm_imshow(abs(unmix(:,:,:,2)), [], [2 4]);
+ismrm_imshow(angle(unmix(:,:,:,1)), [], [2 4]); colormap(<span class="string">'hsv'</span>);
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_13.png" alt=""> <img vspace="5" hspace="5" src="ismrm_beatty_practical_session_14.png" alt=""> <p>PARS unmixing</p><pre class="codeinput">ismrm_imshow(abs(unmix(:,:,:,3)), [], [2 4]);
+ismrm_imshow(angle(unmix(:,:,:,3)), [], [2 4]); colormap(<span class="string">'hsv'</span>);
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_15.png" alt=""> <img vspace="5" hspace="5" src="ismrm_beatty_practical_session_16.png" alt=""> <p>GRAPPA unmixing</p><pre class="codeinput">ismrm_imshow(abs(unmix(:,:,:,4)), [], [2 4]);
+ismrm_imshow(angle(unmix(:,:,:,4)), [], [2 4]); colormap(<span class="string">'hsv'</span>);
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_17.png" alt=""> <img vspace="5" hspace="5" src="ismrm_beatty_practical_session_18.png" alt=""> <h2>Apply and Analyze Reconstructions<a name="17"></a></h2><pre class="codeinput">aem = zeros([imsize num_recons]);
+gmap = zeros([imsize, num_recons]);
+im_hat = zeros([imsize, num_recons]);
+im_diff = zeros([imsize, num_recons]);
+
+signal_mask = imclose(im1&gt;100.0, strel(<span class="string">'disk'</span>, 5));
+
+<span class="keyword">for</span> recon_index = 1:num_recons,
+    aem(:,:,recon_index) = ismrm_calculate_aem(signal_mask, csm_true, unmix(:,:,:,recon_index), acc_factor);
+    gmap(:,:,recon_index) = ismrm_calculate_gmap(unmix(:,:,:,recon_index), ccm_roemer_optimal, Rn, acc_factor);
+    im_hat(:,:,recon_index) = abs(sum(im_alias .* unmix(:,:,:,recon_index), 3));
+    im_diff(:,:,recon_index) = abs(im_hat(:,:,recon_index) - im_true);
+<span class="keyword">end</span>
+</pre><p>aliasing energy maps</p><pre class="codeinput">ismrm_imshow(aem, [0 0.1], [], titles); colormap(jet);
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_19.png" alt=""> <p>g-factor (relative noise amplification) maps</p><pre class="codeinput">ismrm_imshow(gmap, [0 6], [], titles); colormap(jet);
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_20.png" alt=""> <p>reconstructed images</p><pre class="codeinput">ismrm_imshow(im_hat, [0 0.7 .* max(im_hat(:))], [], titles);
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_21.png" alt=""> <p>difference images</p><pre class="codeinput">ismrm_imshow(im_diff, [0 0.1 * max(im_hat(:))], [], titles);
+</pre><img vspace="5" hspace="5" src="ismrm_beatty_practical_session_22.png" alt=""> <h2>Additional Demos<a name="22"></a></h2><div><ul><li><tt>ismrm_demo_prewhitening.m</tt></li></ul></div><p>Demonstration that prewhitening produces same end result as using the noise covariance matrix in the reconstruction.</p><div><ul><li><tt>ismrm_demo_rFOV.m</tt></li></ul></div><p>A study of the reduced field-of-view case.</p><div><ul><li><tt>ismrm_demo_minimal_cal.m</tt></li></ul></div><p>A study of calibration performance with a small number of calibration lines.</p><div><ul><li><tt>ismrm_demo_tychonov_regularization.m</tt></li></ul></div><p>A study of Tychonov regularization for SENSE and local k-space kernel calibration.</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2012b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% ISMRM Sunrise Practical Session, Parallel Imaging Part I
+%
+% This document contains the first set of practical exercises for the
+% ISMRM course on parallel imaging.
+
+%% Exercise Data
+%
+% Exercise ground truth information is found in im1.mat (brain image), smaps_phantom.mat
+% (sensitivity maps) and noise_covariances.mat (noise covariance matrices).
+%
+% We start by clearing the workspace, loading this ground truth information
+% and setting a few parameters from this.
+
+close all;
+clear all
+
+
+fprintf('Loading Ground Truth Information\n');
+load im1.mat
+load smaps_phantom.mat
+load noise_covariances.mat
+
+ncoils = size(smaps,3);
+Rn = Rn_normal_8;
+imsize = size(im1);
+nx = imsize(1);
+ny = imsize(2);
+
+%% Data Simulation
+%
+% Let's use our ground truth data to simulate some data
+%
+channel_im = smaps .* repmat(im1, [1 1 ncoils]);
+
+noise_scale = 0.1;
+noise = noise_scale * max(im1(:)) * ismrm_generate_correlated_noise(imsize, Rn);
+data = ismrm_transform_image_to_kspace(channel_im, [1 2]) + noise;
+
+%% Prewhiten
+% 
+% Let's start by prewhitening so that we don't have to contend with the
+% noise covariance matrix.
+%
+dmtx = ismrm_calculate_noise_decorrelation_mtx_from_covariance_mtx(Rn);
+csm_true = ismrm_apply_noise_decorrelation_mtx(smaps, dmtx);
+data = ismrm_apply_noise_decorrelation_mtx(data, dmtx);
+%Rn = eye(ncoils);
+
+%% Channel Combination
+%
+% Let's use our ground truth data to perform an SNR-optimal channel
+% combination
+im_full = ismrm_transform_kspace_to_image(data, [1, 2]);
+ccm_roemer_optimal = ismrm_compute_ccm(csm_true, eye(ncoils));
+im_roemer_optimal = abs(sum(im_full .* ccm_roemer_optimal, 3));
+ismrm_imshow(im_roemer_optimal);
+
+%%
+% How does this compare to our ground-truth image?
+ismrm_imshow(abs(im_roemer_optimal-im1));
+
+%%
+% The noise level varies slightly from pixel-to-pixel.  Let's make a map of
+% this
+noise_map = ismrm_calculate_noise_amplification(ccm_roemer_optimal, eye(ncoils));
+ismrm_imshow(noise_map, [0 max(noise_map(:))]);
+
+%%
+% How does this compare to a root-sum-of-squares (SOS) reconstruction?
+im_sos = ismrm_rss(im_full,3);
+ismrm_imshow(cat(3, im_roemer_optimal, im_sos));
+ismrm_imshow(cat(3, abs(im_roemer_optimal-im1), abs(im_sos-im1)));
+
+%%
+% Looks like we have a scaling and/or shading issue that makes it hard to
+% do this comparison. Let's normalize to SOS shading
+[ccm_roemer_optimal, shading_correction_im] = ismrm_normalize_shading_to_sos(ccm_roemer_optimal);
+im_roemer_optimal = abs(sum(im_full .* ccm_roemer_optimal, 3));
+im_true = shading_correction_im .* im1;
+ismrm_imshow(cat(3, im_true, im_roemer_optimal, im_sos));
+ismrm_imshow(cat(3, abs(im_roemer_optimal-im_true), abs(im_sos-im_true)));
+
+%%
+% SOS channel combination aligns the phase of the background noise before
+% summing, leading to a DC ofset in these pixels.  Let's try channel
+% combination based on coil sensitivity estimates from some low resolution
+% calibration data.
+%
+cal_shape = [32 32];
+cal_noise_scale = 0.1;
+cal_data = ismrm_transform_image_to_kspace(channel_im, [1 2], cal_shape);
+noise = cal_noise_scale * max(im1(:)) * ismrm_generate_correlated_noise(cal_shape, Rn);
+cal_data = cal_data + noise;
+
+cal_data = ismrm_apply_noise_decorrelation_mtx(cal_data, dmtx);
+
+f = hamming(cal_shape(1)) * hamming(cal_shape(2))';
+fmask = repmat(f, [1 1 ncoils]);
+filtered_cal_data = cal_data .* fmask;
+
+cal_im = ismrm_transform_kspace_to_image(filtered_cal_data, [1 2], imsize);
+
+%
+% Use a circular region of support for pixels
+%
+pixel_mask = sum(abs(smaps),3) > 0;
+cal_im = cal_im .* repmat(pixel_mask, [1 1 ncoils]);
+
+csm_walsh = ismrm_estimate_csm_walsh(cal_im);
+csm_mckenzie = ismrm_estimate_csm_mckenzie(cal_im);
+
+csm_true = ismrm_normalize_shading_to_sos(csm_true);
+csm_walsh = ismrm_normalize_shading_to_sos(csm_walsh);
+csm_mckenzie = ismrm_normalize_shading_to_sos(csm_mckenzie);
+
+ccm_mckenzie = ismrm_compute_ccm(csm_mckenzie);
+ccm_walsh = ismrm_compute_ccm(csm_walsh);
+
+im_mckenzie = abs(sum(im_full .* ccm_mckenzie, 3));
+im_walsh = abs(sum(im_full .* ccm_walsh, 3));
+
+ismrm_imshow(cat(3, im_true, im_roemer_optimal, im_sos, im_walsh, im_mckenzie), [], [], {'source image', 'true csm', 'SoS', 'Walsh csm', 'McKenzie csm'});
+ismrm_imshow(cat(3, abs(im_roemer_optimal-im_true), abs(im_sos-im_true), abs(im_walsh-im_true), abs(im_mckenzie-im_true)));
+
+
+%% Create Acclerated Data
+%
+acc_factor = 4;
+sp = ismrm_generate_sampling_pattern(imsize, acc_factor, 0);
+data_accel = data .* repmat(sp == 1 | sp == 3,[1 1 ncoils]);
+im_alias = ismrm_transform_kspace_to_image(data_accel,[1,2]);
+ismrm_imshow(abs(im_alias),[], [2 4]);
+
+%% Create Data Driven & Model Driven Joint Encoding Relations
+%
+kernel_shape = [5 7];
+jer_lookup_dd = ismrm_compute_jer_data_driven(cal_data, kernel_shape);
+unfiltered_cal_im = ismrm_transform_kspace_to_image(cal_data, [1,2], 2 * size(cal_data));
+jer_lookup_md = ismrm_compute_jer_model_driven(unfiltered_cal_im, kernel_shape);
+
+%% Use Various Calibration Approaches to Create Unmixing Images
+%
+num_recons = 4;
+titles = {'SENSE true csm', 'SENSE estimated csm', 'PARS', 'GRAPPA'};
+
+unmix = zeros([imsize ncoils num_recons]);
+unmix(:,:,:,1) = ismrm_calculate_sense_unmixing(acc_factor, csm_true, eye(ncoils), 0) .* acc_factor;
+unmix(:,:,:,2) = ismrm_calculate_sense_unmixing(acc_factor, csm_mckenzie, eye(ncoils), 0) .* acc_factor;
+unmix(:,:,:,3) = ismrm_calculate_jer_unmixing(jer_lookup_md, acc_factor, ccm_mckenzie, 0, false);
+unmix(:,:,:,4) = ismrm_calculate_jer_unmixing(jer_lookup_dd, acc_factor, ccm_mckenzie, 0, false);
+
+%%
+% SENSE unmixing
+ismrm_imshow(abs(unmix(:,:,:,1)), [], [2 4]);
+ismrm_imshow(angle(unmix(:,:,:,1)), [], [2 4]); colormap('hsv');
+
+
+%%
+% SENSE unmixing with estimated coil sensitivity maps
+ismrm_imshow(abs(unmix(:,:,:,2)), [], [2 4]);
+ismrm_imshow(angle(unmix(:,:,:,1)), [], [2 4]); colormap('hsv');
+
+%%
+% PARS unmixing
+ismrm_imshow(abs(unmix(:,:,:,3)), [], [2 4]);
+ismrm_imshow(angle(unmix(:,:,:,3)), [], [2 4]); colormap('hsv');
+
+%%
+% GRAPPA unmixing
+ismrm_imshow(abs(unmix(:,:,:,4)), [], [2 4]);
+ismrm_imshow(angle(unmix(:,:,:,4)), [], [2 4]); colormap('hsv');
+
+%% Apply and Analyze Reconstructions
+%
+aem = zeros([imsize num_recons]);
+gmap = zeros([imsize, num_recons]);
+im_hat = zeros([imsize, num_recons]);
+im_diff = zeros([imsize, num_recons]);
+
+signal_mask = imclose(im1>100.0, strel('disk', 5));
+
+for recon_index = 1:num_recons,
+    aem(:,:,recon_index) = ismrm_calculate_aem(signal_mask, csm_true, unmix(:,:,:,recon_index), acc_factor);
+    gmap(:,:,recon_index) = ismrm_calculate_gmap(unmix(:,:,:,recon_index), ccm_roemer_optimal, Rn, acc_factor);
+    im_hat(:,:,recon_index) = abs(sum(im_alias .* unmix(:,:,:,recon_index), 3));
+    im_diff(:,:,recon_index) = abs(im_hat(:,:,recon_index) - im_true);
+end
+    
+
+%%
+% aliasing energy maps
+ismrm_imshow(aem, [0 0.1], [], titles); colormap(jet);
+
+%%
+% g-factor (relative noise amplification) maps
+ismrm_imshow(gmap, [0 6], [], titles); colormap(jet);
+
+%%
+% reconstructed images
+ismrm_imshow(im_hat, [0 0.7 .* max(im_hat(:))], [], titles);
+
+%%
+% difference images
+ismrm_imshow(im_diff, [0 0.1 * max(im_hat(:))], [], titles);
+
+%% Additional Demos
+%
+% * |ismrm_demo_prewhitening.m|
+%
+% Demonstration that prewhitening produces same end result as using the
+% noise covariance matrix in the reconstruction.
+%
+% * |ismrm_demo_rFOV.m|
+%
+% A study of the reduced field-of-view case.
+%
+% * |ismrm_demo_minimal_cal.m|
+%
+% A study of calibration performance with a small number of calibration
+% lines.
+%
+% * |ismrm_demo_tychonov_regularization.m|
+%
+% A study of Tychonov regularization for SENSE and local k-space kernel
+% calibration.
+%
+##### SOURCE END #####
+--></body></html>

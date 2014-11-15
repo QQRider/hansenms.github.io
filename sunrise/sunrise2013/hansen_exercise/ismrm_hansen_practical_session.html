@@ -1,0 +1,487 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>ISMRM Sunrise Practical Session</title><meta name="generator" content="MATLAB 8.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-04-19"><meta name="DC.source" content="ismrm_hansen_practical_session.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>ISMRM Sunrise Practical Session</h1><!--introduction--><p>This document contains the second set of practical exercises for the ISMRM course on parallel imaging.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Excercise Data</a></li><li><a href="#2">Noise Pre-Whitening</a></li><li><a href="#9">SNR Scaled Reconstruction</a></li><li><a href="#14">Pseudo Replica Method</a></li><li><a href="#15">Iterative Non-Cartesian SENSE</a></li><li><a href="#23">Additional Demos</a></li></ul></div><h2>Excercise Data<a name="1"></a></h2><p>All the data used in this set of exercises can be found in the file hansen_exercises.mat. We will start by clearing the workspace and loading the data</p><pre class="codeinput">close <span class="string">all</span>; clear <span class="string">all</span>;
+load <span class="string">hansen_exercises.mat</span>
+whos
+</pre><pre class="codeoutput">  Name                  Size                 Bytes  Class     Attributes
+
+  data                256x256x8            8388608  double    complex   
+  data_spiral       18176x8                2326528  double    complex   
+  k_spiral          18176x2                 290816  double              
+  noise_color         256x256x8            8388608  double    complex   
+  noise_spiral      18176x8                2326528  double    complex   
+  reg_img             256x256               524288  double              
+  smaps               256x256x8            8388608  double    complex   
+  sp                  256x256               524288  double              
+  w_spiral          18176x1                 145408  double              
+
+</pre><h2>Noise Pre-Whitening<a name="2"></a></h2><pre>The purpose of this exercise is to see the effects of noise
+pre-whitening. We will use a SENSE reconstruction as an example</pre><p><img src="ismrm_hansen_practical_session_eq93081.png" alt="$$ \tilde{\mathbf{x}} =  \arg \min_{\mathbf{x}} \left\{ \left\| \mathbf{E}\mathbf{x}-\mathbf{m} \right\|_2 \right\} $$"></p><p>where <img src="ismrm_hansen_practical_session_eq60671.png" alt="$\mathbf{x}$"> is the reconstructed image, <img src="ismrm_hansen_practical_session_eq99767.png" alt="$\mathbf{E}$"> is the encoding (sensitivity matrix) and <img src="ismrm_hansen_practical_session_eq65601.png" alt="$\mathbf{s}$"> is the measured data.</p><p>Let's start with a naive SENSE reconstruction</p><pre class="codeinput">smask = (sp == 1 | sp == 3);
+ncoils = size(smaps,3);
+nelements = numel(smaps)/ncoils;
+
+acc_factor = (numel(sp)/sum(smask(:)));
+unmix = ismrm_calculate_sense_unmixing(acc_factor,smaps);
+
+alias_img = ismrm_transform_kspace_to_image(data .* repmat(smask,[1 1 ncoils]),[1,2]);
+</pre><p>Let's look at the aliased images:</p><pre class="codeinput">ismrm_imshow(abs(alias_img),[],[2 4]);
+</pre><img vspace="5" hspace="5" src="ismrm_hansen_practical_session_01.png" alt=""> <p>It is evident already from this view that a couple of channels have a different noise level (channels 3 and 6).</p><p>An now the actual SENSE reconstruction:</p><pre class="codeinput">img = sum(unmix .* alias_img,3);
+ismrm_imshow(abs(img))
+</pre><img vspace="5" hspace="5" src="ismrm_hansen_practical_session_02.png" alt=""> <p>In that reconstruction we did not take the noise correlation into account. Let's have a look at it.</p><pre class="codeinput">noise = reshape(noise_color,numel(noise_color)/ncoils, ncoils);
+noise = permute(noise,[2 1]);
+M = size(noise,2);
+Rn = (1/(M-1))*(noise*noise');
+
+figure;imagesc(abs(Rn)); axis <span class="string">equal</span>; axis <span class="string">off</span>; colormap(jet);
+</pre><img vspace="5" hspace="5" src="ismrm_hansen_practical_session_03.png" alt=""> <p>As we predicted from the raw aliased images, there is some increased noise in some channels.</p><p>Let's decoorelate:</p><pre class="codeinput">dmtx = inv(chol(Rn,<span class="string">'lower'</span>))*sqrt(2); <span class="comment">%sqrt(2) for sd=1 in real and imag</span>
+
+<span class="comment">%Both data and noise coil sensitivities</span>
+data_prew = ismrm_apply_noise_decorrelation_mtx(data,dmtx);
+smaps_prew = ismrm_apply_noise_decorrelation_mtx(smaps,dmtx);
+</pre><pre class="codeinput"><span class="comment">%Now let's repeat the reconstruction:</span>
+unmix_prew = ismrm_calculate_sense_unmixing(acc_factor,smaps_prew);
+
+alias_img_prew = ismrm_transform_kspace_to_image(data_prew .* repmat(smask,[1 1 ncoils]),[1,2]);
+
+img_prew = sum(unmix_prew .* alias_img_prew,3);
+ismrm_imshow(cat(3,abs(img),abs(img_prew)));
+</pre><img vspace="5" hspace="5" src="ismrm_hansen_practical_session_04.png" alt=""> <h2>SNR Scaled Reconstruction<a name="9"></a></h2><p>Now that we have performed noise-prewhitening, i.e. noise is scaled to sd=1, we would like to produce an image in SNR units.</p><p>For SNR scaled reconstruction, we need to make sure that all signal processing steps maintain SNR scaling.</p><p>Let's start by examining the transformation from k-space to image space:</p><pre class="codeinput"><span class="comment">%Generate white noise (like we have after prewhitening)</span>
+noise_white = complex(randn(size(data)),randn(size(data)));
+
+<span class="comment">%Mask out values that we don't acquire</span>
+noise_white = noise_white.*repmat(smask,[1 1 ncoils]);
+
+<span class="comment">%Transform from k-space to image:</span>
+noise_test = ismrm_transform_kspace_to_image(noise_white,[1,2]);
+</pre><p>Get the standard deviation</p><pre class="codeinput">sd = std(real(noise_test(:)))
+</pre><pre class="codeoutput">
+sd =
+
+    0.5019
+
+</pre><p>As we can see the noise level is now about half of what it is supposed to be. This is because we have forgotten that only a quater of the samples are actually sampled and so we need to scale by the square root of the acceleration factor:</p><pre class="codeinput"><span class="comment">%Transform from k-space to image:</span>
+noise_test = sqrt(acc_factor)*ismrm_transform_kspace_to_image(noise_white,[1,2]);
+
+<span class="comment">%Now the standard deviation</span>
+sd = std(real(noise_test(:)))
+</pre><pre class="codeoutput">
+sd =
+
+    1.0037
+
+</pre><p>By scaling by the acceleration factor we have maintained unit noise scaling through our reconstruction. Now we can "trivially" obtain an SNR scaled reconstruction:</p><pre class="codeinput">unmix_prew = ismrm_calculate_sense_unmixing(acc_factor,smaps_prew);
+
+alias_img_prew = sqrt(acc_factor).*ismrm_transform_kspace_to_image(data_prew .* repmat(smask,[1 1 ncoils]),[1,2]);
+img_snr = sum(unmix_prew .* alias_img_prew,3) ./ sqrt(sum(abs(unmix_prew).^2,3));
+
+ismrm_imshow(abs(img_snr)); colorbar;
+</pre><img vspace="5" hspace="5" src="ismrm_hansen_practical_session_05.png" alt=""> <p>We can also easily inspect the g-map directly</p><pre class="codeinput">gmap = sqrt(sum(abs(unmix_prew).^2,3)).*sqrt(sum(abs(smaps_prew).^2,3));
+ismrm_imshow(abs(gmap)); colormap(jet); colorbar;
+</pre><img vspace="5" hspace="5" src="ismrm_hansen_practical_session_06.png" alt=""> <h2>Pseudo Replica Method<a name="14"></a></h2><p>What if we didn't have access to the unmixing coefficients directly? We can obtain SNR scaled reconstructions using the pseudo replica method.</p><pre class="codeinput"><span class="keyword">for</span> r=1:100,
+    noise_white = complex(randn(size(data)),randn(size(data)));
+    noise_white = noise_white.*repmat(smask,[1 1 ncoils]);
+    s = data_prew + noise_white;
+    tmp = sqrt(acc_factor).*ismrm_transform_kspace_to_image(s .* repmat(smask,[1 1 ncoils]),[1,2]);
+    img_noise_rep(:,:,r) = sum(tmp .* unmix_prew,3);
+<span class="keyword">end</span>
+
+g_pseudo = std(abs(img_noise_rep + max(abs(img_noise_rep(:)))),[],3);
+g_pseudo(g_pseudo &lt; eps) = 1;
+snr_pseudo = mean(img_noise_rep,3)./g_pseudo;
+g_pseudo = g_pseudo.*sqrt(sum(abs(smaps_prew).^2,3));
+ismrm_imshow([abs(img_snr) abs(snr_pseudo)]); colorbar;
+ismrm_imshow([abs(gmap) abs(g_pseudo)]); colormap(jet); colorbar;
+</pre><img vspace="5" hspace="5" src="ismrm_hansen_practical_session_07.png" alt=""> <img vspace="5" hspace="5" src="ismrm_hansen_practical_session_08.png" alt=""> <h2>Iterative Non-Cartesian SENSE<a name="15"></a></h2><p>Now let's look at non-Cartesian imaging. A spiral dataset is included in the example dataset.</p><p>First we noise pre-whiten</p><pre class="codeinput">dmtx = ismrm_calculate_noise_decorrelation_mtx(noise_spiral);
+data_spiral = ismrm_apply_noise_decorrelation_mtx(data_spiral,dmtx);
+smaps_prew = ismrm_apply_noise_decorrelation_mtx(smaps,dmtx);
+</pre><p>Then let us inspect the undersampled data</p><pre class="codeinput"><span class="comment">%Prepare NUFFT</span>
+N = [size(smaps,1) size(smaps,2)];
+J = [5 5];
+K = N*2;
+
+nufft_st = nufft_init(k_spiral*2*pi,N,J,K,N/2,<span class="string">'minmax:kb'</span>);
+recon_undersampled = nufft_adj(data_spiral .* repmat(w_spiral,[1 size(data_spiral,2)]),nufft_st);
+ismrm_imshow(abs(recon_undersampled),[],[2 4]);
+</pre><img vspace="5" hspace="5" src="ismrm_hansen_practical_session_09.png" alt=""> <p>Low let's set up the non-Cartesian reconstruction First we need an encoding function to feed into LSQR:</p><pre class="codeinput">dbtype <span class="string">ismrm_encoding_non_cartesian_SENSE.m</span>
+</pre><pre class="codeoutput">
+1     function outp =  ismrm_encoding_non_cartesian_SENSE(inp,csm,nufft_st,weights,transpose_indicator)
+2     
+3     scale = sqrt(prod(prod(nufft_st.Kd))/numel(weights(:)));
+4     if (strcmp(transpose_indicator,'transp')),
+5         samples = size(nufft_st.om,1);
+6         coils = numel(inp)/samples;
+7         inp = reshape(inp,samples,coils);
+8         outp = (nufft_adj(inp .* repmat(sqrt(weights),[1 coils]),nufft_st)./(sqrt(prod(nufft_st.Kd))))*scale;
+9         outp = sum(conj(csm) .* outp,3);
+10        outp = outp(:);
+11    elseif (strcmp(transpose_indicator, 'notransp')),
+12        outp = repmat(reshape(inp,size(csm,1),size(csm,2)),[1 1 size(csm,3)]) .* csm;
+13        outp = (nufft(outp,nufft_st)./(sqrt(prod(nufft_st.Kd))))*scale;
+14        outp = outp .*repmat(sqrt(weights),[1 size(outp,2)]);
+15        outp = outp(:);
+16    else
+17        error('Transpose flag not appropriately defined');
+18    end
+19    
+20    return
+21    
+
+</pre><p>Now let's set up the LSQR solver using this function</p><pre class="codeinput">w = w_spiral*prod(K);
+E = @(x,tr) ismrm_encoding_non_cartesian_SENSE(x,smaps_prew,nufft_st,w,tr);
+
+img_spiral = lsqr(E, data_spiral(:) .* repmat(sqrt(w),[size(smaps_prew,3),1]),1e-3,50);
+img_spiral = reshape(img_spiral,size(smaps_prew,1),size(smaps_prew,2));
+
+ismrm_imshow(abs(img_spiral));
+</pre><pre class="codeoutput">note in nufft: could save flops via smarter padded FFT
+lsqr converged at iteration 47 to a solution with relative residual 0.059.
+</pre><img vspace="5" hspace="5" src="ismrm_hansen_practical_session_10.png" alt=""> <p>This functionality is encapsulated in the <tt>ismrm_non_cartesian_sense.m</tt> function.</p><pre class="codeinput">help <span class="string">ismrm_non_cartesian_sense</span>
+</pre><pre class="codeoutput">    [img,snr,g,noise_psf] = ismrm_non_cartesian_sense(inp,k,w,csm,replicas)
+ 
+    Non-Cartesian SENSE reconstruction. Uses Matlab LSQR to solve.
+ 
+    It is recommended to input data with pre-whitened noise scale to sd=1.
+ 
+    Gridding weights should be scaled such that sum(w(:)) is equal to the
+    fraction of k-space that the samples cover, i.e. pi*0.5^2 for a circle.
+ 
+    INPUT:
+      - inp         [nsamples,coils]     : Input k-space data (vector)
+      - k           [nsamples,2]         : k-space coordinates, range-0.5:0.5
+      - w           [nsamples]           : vector of gridding weights
+      - csm         [x,y,coil]           : Coil sensitivities 
+      - reg         [x,y]                : Image space regularization mask
+      - lambda      scalar               : regularization factor
+      - replicas    scalar (dafault 100) : Number of replicas to run if SNR
+                                           is requested
+ 
+    OUTPUT:
+      - img         [x,y]                : Output image
+      - snr                              : An image in SNR units.
+     -  g                                : A g-map (assuming image_formation_func doesn't scale)
+     -  noise_psf                        : Point spread function of the noise
+ 
+ 
+    Code made available for the ISMRM 2013 Sunrise Educational Course
+  
+    Michael S. Hansen (michael.hansen@nih.gov)
+ 
+
+</pre><p>To reconstruct using this function use:</p><pre class="codeinput">img_spiral2 = ismrm_non_cartesian_sense(data_spiral(:),k_spiral,w_spiral,smaps_prew);
+
+ismrm_imshow(cat(3,abs(img_spiral),abs(img_spiral2)));
+</pre><pre class="codeoutput">lsqr stopped at iteration 20 without converging to the desired tolerance 0.001
+because the maximum number of iterations was reached.
+The iterate returned (number 20) has relative residual 0.059.
+</pre><img vspace="5" hspace="5" src="ismrm_hansen_practical_session_11.png" alt=""> <p>For a demo on regularized non-Cartesian parallel imaging look in <tt>ismrm_demo_regularization_iterative_sense.m</tt></p><h2>Additional Demos<a name="23"></a></h2><div><ul><li><tt>ismrm_demo_cartesian_snr_units.m</tt></li></ul></div><p>Reconstruction in SNR units using Cartesian data</p><div><ul><li><tt>ismrm_demo_iterative_cartesian.m</tt></li></ul></div><p>Cartesian iterative reconstruction. Demonstrates both SENSE and SPIRiT reconstruction techniques</p><div><ul><li><tt>ismrm_demo_noise_decorrelation.m</tt></li></ul></div><p>Demonstration of the effects of noise decorrelation.</p><p>*<tt>ismrm_demo_regularization_iterative_sense.m</tt></p><p>Demonstration of the effects of regularization in non-Cartesian parallel imaging</p><div><ul><li><tt>ismrm_demo_non_cartesian.m</tt></li></ul></div><p>Demonstration of non-Cartesian parallel imaging with SENSE and SPIRiT</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2012b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% ISMRM Sunrise Practical Session 
+%
+% This document contains the second set of practical exercises for the
+% ISMRM course on parallel imaging.
+
+
+%% Excercise Data
+% All the data used in this set of exercises can be found in the file
+% hansen_exercises.mat.
+% We will start by clearing the workspace and loading the data
+
+close all; clear all;
+load hansen_exercises.mat
+whos
+
+%% Noise Pre-Whitening
+%
+%  The purpose of this exercise is to see the effects of noise
+%  pre-whitening. We will use a SENSE reconstruction as an example
+%
+% $$ \tilde{\mathbf{x}} =  \arg \min_{\mathbf{x}} \left\{ \left\| \mathbf{E}\mathbf{x}-\mathbf{m} \right\|_2 \right\} $$
+%
+% where $\mathbf{x}$ is the reconstructed image, $\mathbf{E}$ is the
+% encoding (sensitivity matrix) and $\mathbf{s}$ is the measured data.
+%
+% Let's start with a naive SENSE reconstruction
+
+smask = (sp == 1 | sp == 3);
+ncoils = size(smaps,3);
+nelements = numel(smaps)/ncoils;
+
+acc_factor = (numel(sp)/sum(smask(:)));
+unmix = ismrm_calculate_sense_unmixing(acc_factor,smaps);
+
+alias_img = ismrm_transform_kspace_to_image(data .* repmat(smask,[1 1 ncoils]),[1,2]);
+
+%%
+% Let's look at the aliased images:
+
+ismrm_imshow(abs(alias_img),[],[2 4]);
+
+%%
+% It is evident already from this view that a couple of channels have a
+% different noise level (channels 3 and 6). 
+
+%%
+% An now the actual SENSE reconstruction:
+
+img = sum(unmix .* alias_img,3);
+ismrm_imshow(abs(img))
+
+%%
+% In that reconstruction we did not take the noise correlation into
+% account. Let's have a look at it. 
+
+noise = reshape(noise_color,numel(noise_color)/ncoils, ncoils);
+noise = permute(noise,[2 1]);
+M = size(noise,2);
+Rn = (1/(M-1))*(noise*noise');
+
+figure;imagesc(abs(Rn)); axis equal; axis off; colormap(jet);
+
+%%
+% As we predicted from the raw aliased images, there is some increased
+% noise in some channels. 
+%
+% Let's decoorelate:
+
+dmtx = inv(chol(Rn,'lower'))*sqrt(2); %sqrt(2) for sd=1 in real and imag
+
+%Both data and noise coil sensitivities
+data_prew = ismrm_apply_noise_decorrelation_mtx(data,dmtx);
+smaps_prew = ismrm_apply_noise_decorrelation_mtx(smaps,dmtx);
+
+%%
+%Now let's repeat the reconstruction:
+unmix_prew = ismrm_calculate_sense_unmixing(acc_factor,smaps_prew);
+
+alias_img_prew = ismrm_transform_kspace_to_image(data_prew .* repmat(smask,[1 1 ncoils]),[1,2]);
+
+img_prew = sum(unmix_prew .* alias_img_prew,3);
+ismrm_imshow(cat(3,abs(img),abs(img_prew)));
+
+
+%% SNR Scaled Reconstruction
+%
+% Now that we have performed noise-prewhitening, i.e. noise is scaled to
+% sd=1, we would like to produce an image in SNR units. 
+%
+% For SNR scaled reconstruction, we need to make sure that all signal
+% processing steps maintain SNR scaling. 
+%
+% Let's start by examining the transformation from k-space to image space:
+
+%Generate white noise (like we have after prewhitening)
+noise_white = complex(randn(size(data)),randn(size(data)));
+
+%Mask out values that we don't acquire
+noise_white = noise_white.*repmat(smask,[1 1 ncoils]);
+
+%Transform from k-space to image:
+noise_test = ismrm_transform_kspace_to_image(noise_white,[1,2]);
+
+%%
+% Get the standard deviation
+% 
+
+sd = std(real(noise_test(:)))
+
+%%
+% As we can see the noise level is now about half of what it is supposed to
+% be. This is because we have forgotten that only a quater of the samples
+% are actually sampled and so we need to scale by the square root of the
+% acceleration factor:
+
+%Transform from k-space to image:
+noise_test = sqrt(acc_factor)*ismrm_transform_kspace_to_image(noise_white,[1,2]);
+
+%Now the standard deviation
+sd = std(real(noise_test(:)))
+
+%%
+% By scaling by the acceleration factor we have maintained unit noise
+% scaling through our reconstruction. Now we can "trivially" obtain an SNR
+% scaled reconstruction:
+
+unmix_prew = ismrm_calculate_sense_unmixing(acc_factor,smaps_prew);
+
+alias_img_prew = sqrt(acc_factor).*ismrm_transform_kspace_to_image(data_prew .* repmat(smask,[1 1 ncoils]),[1,2]);
+img_snr = sum(unmix_prew .* alias_img_prew,3) ./ sqrt(sum(abs(unmix_prew).^2,3));
+
+ismrm_imshow(abs(img_snr)); colorbar;
+
+%% 
+% We can also easily inspect the g-map directly
+gmap = sqrt(sum(abs(unmix_prew).^2,3)).*sqrt(sum(abs(smaps_prew).^2,3));
+ismrm_imshow(abs(gmap)); colormap(jet); colorbar;
+
+
+%% Pseudo Replica Method
+%
+% What if we didn't have access to the unmixing coefficients directly?
+% We can obtain SNR scaled reconstructions using the pseudo replica method.
+% 
+
+for r=1:100,
+    noise_white = complex(randn(size(data)),randn(size(data)));
+    noise_white = noise_white.*repmat(smask,[1 1 ncoils]);
+    s = data_prew + noise_white;
+    tmp = sqrt(acc_factor).*ismrm_transform_kspace_to_image(s .* repmat(smask,[1 1 ncoils]),[1,2]);
+    img_noise_rep(:,:,r) = sum(tmp .* unmix_prew,3);
+end
+
+g_pseudo = std(abs(img_noise_rep + max(abs(img_noise_rep(:)))),[],3); 
+g_pseudo(g_pseudo < eps) = 1;
+snr_pseudo = mean(img_noise_rep,3)./g_pseudo;
+g_pseudo = g_pseudo.*sqrt(sum(abs(smaps_prew).^2,3));
+ismrm_imshow([abs(img_snr) abs(snr_pseudo)]); colorbar;
+ismrm_imshow([abs(gmap) abs(g_pseudo)]); colormap(jet); colorbar;
+
+
+%% Iterative Non-Cartesian SENSE
+% 
+% Now let's look at non-Cartesian imaging. A spiral dataset is included in
+% the example dataset. 
+
+%%
+% First we noise pre-whiten
+dmtx = ismrm_calculate_noise_decorrelation_mtx(noise_spiral);
+data_spiral = ismrm_apply_noise_decorrelation_mtx(data_spiral,dmtx);
+smaps_prew = ismrm_apply_noise_decorrelation_mtx(smaps,dmtx);
+
+%%
+% Then let us inspect the undersampled data
+
+%Prepare NUFFT
+N = [size(smaps,1) size(smaps,2)];
+J = [5 5];
+K = N*2;
+
+nufft_st = nufft_init(k_spiral*2*pi,N,J,K,N/2,'minmax:kb');
+recon_undersampled = nufft_adj(data_spiral .* repmat(w_spiral,[1 size(data_spiral,2)]),nufft_st);
+ismrm_imshow(abs(recon_undersampled),[],[2 4]);
+
+%%
+% Low let's set up the non-Cartesian reconstruction
+% First we need an encoding function to feed into LSQR:
+
+dbtype ismrm_encoding_non_cartesian_SENSE.m
+
+%%
+% Now let's set up the LSQR solver using this function
+
+w = w_spiral*prod(K);
+E = @(x,tr) ismrm_encoding_non_cartesian_SENSE(x,smaps_prew,nufft_st,w,tr);
+
+img_spiral = lsqr(E, data_spiral(:) .* repmat(sqrt(w),[size(smaps_prew,3),1]),1e-3,50);
+img_spiral = reshape(img_spiral,size(smaps_prew,1),size(smaps_prew,2));
+
+ismrm_imshow(abs(img_spiral));
+
+%%
+% This functionality is encapsulated in the |ismrm_non_cartesian_sense.m|
+% function. 
+
+help ismrm_non_cartesian_sense
+
+%% 
+% To reconstruct using this function use:
+
+img_spiral2 = ismrm_non_cartesian_sense(data_spiral(:),k_spiral,w_spiral,smaps_prew);
+
+ismrm_imshow(cat(3,abs(img_spiral),abs(img_spiral2)));
+
+%%
+% For a demo on regularized non-Cartesian parallel imaging look in
+% |ismrm_demo_regularization_iterative_sense.m|
+
+
+%% Additional Demos
+% 
+% * |ismrm_demo_cartesian_snr_units.m|
+%
+% Reconstruction in SNR units using Cartesian data
+%
+% * |ismrm_demo_iterative_cartesian.m| 
+%
+% Cartesian iterative reconstruction. Demonstrates both SENSE and SPIRiT
+% reconstruction techniques
+% 
+% * |ismrm_demo_noise_decorrelation.m|
+% 
+% Demonstration of the effects of noise decorrelation.
+%
+% *|ismrm_demo_regularization_iterative_sense.m|
+%
+% Demonstration of the effects of regularization in non-Cartesian parallel
+% imaging
+%
+% * |ismrm_demo_non_cartesian.m|
+% 
+% Demonstration of non-Cartesian parallel imaging with SENSE and SPIRiT
+
+##### SOURCE END #####
+--></body></html>
