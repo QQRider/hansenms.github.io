@@ -35,7 +35,7 @@ def dockerhub():
     repo_name = parsed_json[u'repository'][u'repo_name']
     url = parsed_json[u'repository']['repo_url']
 
-    msg = "New #Gadgetron release " + tag + ", #Docker image `docker pull " + repo_name + ":" + tag + "', " + url 
+    msg = "New #MyFancyApplication release " + tag + ", #Docker image `docker pull " + repo_name + ":" + tag + "', " + url 
     if tag != 'latest' and request.args.get('dockerkey') == dockerkey:
         t = Twitter(auth=OAuth(config['twitter']['token'], config['twitter']['token_key'], config['twitter']['con_secret'], config['twitter']['con_secret_key']))
         t.statuses.update(status=msg)
